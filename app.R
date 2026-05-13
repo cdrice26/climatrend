@@ -1,0 +1,61 @@
+library(shiny)
+source("locations.R")
+
+ui <- fluidPage(
+  titlePanel("Climatrend"),
+
+  div(id = "location_container"),
+
+  actionButton("add_btn", "Add Another Location"),
+
+  tags$hr(),
+
+  sliderInput(
+    "year_range", 
+    "Time Range:", 
+    min = 1950, 
+    max = as.integer(format(Sys.Date(), "%Y")) - 1, 
+    value = c(2000, 2020), step = 1,
+    sep = ""
+  ),
+
+  tags$hr(),
+
+  selectInput("data_type", "Data Type:", choices = c("Temperature", "Precipitation", "Wind Speed")),
+
+  tags$hr(),
+
+  actionButton("submit", "Submit"),
+  verbatimTextOutput("result")
+)
+
+server <- function(input, output, session) {
+  vals <- reactiveValues(
+    ids = character(),
+    data = list()
+  )
+
+  # Add a new input
+  observeEvent(input$add_btn, {
+    add_location(vals)
+  })
+
+  # Track changes to each input
+  observe({
+    update_locations(vals, input)
+  })
+
+  # Remove an input
+  observe({
+    remove_locations(vals, input)
+  })
+
+  # Submit handler
+  observeEvent(input$submit, {
+    output$result <- renderPrint(
+      paste(vals$data, input$year_range, input$data_type, sep = " ")
+    )
+  })
+}
+
+shinyApp(ui, server)
