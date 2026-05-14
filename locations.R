@@ -1,3 +1,6 @@
+library(shiny)
+library(bslib)
+
 make_id <- function() paste0("loc_", sample.int(1e9, 1))
 
 add_location <- function(vals) {
@@ -16,20 +19,26 @@ add_location <- function(vals) {
   )
 }
 
-update_locations <- function(vals, input){
+update_locations <- function(vals, input) {
   lapply(vals$ids, function(id) {
-      observeEvent(input[[id]], {
+    observeEvent(input[[id]],
+      {
         vals$data[[id]] <- input[[id]]
-      }, ignoreInit = TRUE)
-    })
+      },
+      ignoreInit = TRUE
+    )
+  })
 }
 
 remove_locations <- function(vals, input) {
   lapply(vals$ids, function(id) {
-      observeEvent(input[[paste0("rm_", id)]], {
+    observeEvent(input[[paste0("rm_", id)]],
+      {
         removeUI(selector = paste0("#row_", id))
         vals$ids <- vals$ids[vals$ids != id]
         vals$data[[id]] <- NULL
-      }, ignoreInit = TRUE)
-    })
+      },
+      ignoreInit = TRUE
+    )
+  })
 }
