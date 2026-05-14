@@ -3,7 +3,7 @@ source("locations.R")
 
 ui <- fluidPage(
   titlePanel("Climatrend"),
-
+  div(tags$strong("Locations:")),
   div(id = "location_container"),
 
   actionButton("add_btn", "Add Another Location"),
@@ -26,6 +26,9 @@ ui <- fluidPage(
   tags$hr(),
 
   actionButton("submit", "Submit"),
+
+  tags$hr(),
+
   verbatimTextOutput("result")
 )
 
@@ -53,7 +56,7 @@ server <- function(input, output, session) {
   # Submit handler
   observeEvent(input$submit, {
     output$result <- renderPrint(
-      paste(vals$data, input$year_range, input$data_type, sep = " ")
+      paste(unlist(vals$data), input$year_range, input$data_type, sep = " ")
     )
   })
 }
