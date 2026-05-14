@@ -1,8 +1,8 @@
 library(shiny)
-library(ggplot2)
 source("locations.R")
 source("fetcher.R")
 source("analyzer.R")
+source("plotter.R")
 
 ui <- fluidPage(
   titlePanel("Climatrend"),
@@ -64,22 +64,9 @@ server <- function(input, output, session) {
         NULL
       }
     }))
-    weather_results <- weather_results |>
-      dplyr::select(dplyr::where(~ !all(is.na(.x))))
-    long <- tidyr::pivot_longer(
-      weather_results,
-      cols = -c(date, location),
-      names_to = "variable",
-      values_to = "value"
-    )
+    long <- prepare_df(weather_results, seasonal_diff = TRUE)
     output$plot <- renderPlot(
-      ggplot(
-        data = long,
-        mapping = aes(x = date, y = value, color = variable)
-      ) +
-        geom_line() +
-        facet_grid(location ~ variable, scales = "free_y") +
-        theme_minimal()
+      make_plots(long)
     )
   })
 }
