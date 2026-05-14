@@ -43,5 +43,45 @@ fetch_weather <- function(loc, year_range, data_type) {
   ), ua)
   httr::stop_for_status(res)
   data <- httr::content(res, as = "parsed", type = "application/json")
-  data$daily
+
+  daily <- data$daily
+  if (is.null(daily) || length(daily) == 0) {
+    stop("No daily data returned from the weather API.")
+  }
+
+  time_values <- if (!is.null(daily$time)) {
+    as.Date(as.character(
+      unlist(daily$time, recursive = TRUE, use.names = FALSE)
+    ))
+  } else {
+    as.Date(character())
+  }
+  n <- length(time_values)
+
+  normalize_field <- function(field) {
+    value <- daily[[field]]
+    if (is.null(value)) {
+      return(rep(NA, n))
+    }
+    value <- unlist(value, recursive = TRUE, use.names = FALSE)
+    if (length(value) == 0) {
+      return(rep(NA, n))
+    }
+    if (length(value) != n) {
+      value <- rep(value, length.out = n)
+    }
+    value
+  }
+
+  df <- data.frame(
+    date = time_values,
+    location = rep(if (!is.null(loc$name)) loc$name else NA_character_, n),
+    temperature = normalize_field("temperature_2m_mean"),
+    apparent_temperature = normalize_field("apparent_temperature_mean"),
+    precipitation = normalize_field("precipitation_sum"),
+    snowfall = normalize_field("snowfall_sum"),
+    windspeed = normalize_field("windspeed_10m_max"),
+    stringsAsFactors = FALSE
+  )
+  df
 }

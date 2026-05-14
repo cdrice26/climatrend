@@ -1,6 +1,8 @@
 library(shiny)
+library(ggplot2)
 source("locations.R")
 source("fetcher.R")
+source("analyzer.R")
 
 ui <- fluidPage(
   titlePanel("Climatrend"),
@@ -25,7 +27,7 @@ ui <- fluidPage(
   tags$hr(),
   actionButton("submit", "Submit"),
   tags$hr(),
-  verbatimTextOutput("result")
+  plotOutput("plot")
 )
 
 server <- function(input, output, session) {
@@ -55,15 +57,29 @@ server <- function(input, output, session) {
       Sys.sleep(1) # Don't send more than 1 request per second
       geocode(loc)
     })
-    weather_results <- lapply(geocoded, \(loc) {
+    weather_results <- do.call(rbind, lapply(geocoded, \(loc) {
       if (!is.null(loc)) {
         fetch_weather(loc, input$year_range, input$data_type)
       } else {
         NULL
       }
-    })
-    output$result <- renderPrint(
-      weather_results
+    }))
+    weather_results <- weather_results |>
+      dplyr::select(dplyr::where(~ !all(is.na(.x))))
+    long <- tidyr::pivot_longer(
+      weather_results,
+      cols = -c(date, location),
+      names_to = "variable",
+      values_to = "value"
+    )
+    output$plot <- renderPlot(
+      ggplot(
+        data = long,
+        mapping = aes(x = date, y = value, color = variable)
+      ) +
+        geom_line() +
+        facet_grid(location ~ variable, scales = "free_y") +
+        theme_minimal()
     )
   })
 }
