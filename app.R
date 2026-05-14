@@ -1,6 +1,6 @@
 library(shiny)
 source("locations.R")
-source("geocoder.R")
+source("fetcher.R")
 
 ui <- fluidPage(
   titlePanel("Climatrend"),
@@ -52,17 +52,18 @@ server <- function(input, output, session) {
   # Submit handler
   observeEvent(input$submit, {
     geocoded <- lapply(vals$data, \(loc) {
-      Sys.sleep(1)
+      Sys.sleep(1) # Don't send more than 1 request per second
       geocode(loc)
     })
-    print(geocoded)
+    weather_results <- lapply(geocoded, \(loc) {
+      if (!is.null(loc)) {
+        fetch_weather(loc, input$year_range, input$data_type)
+      } else {
+        NULL
+      }
+    })
     output$result <- renderPrint(
-      paste(
-        unlist(geocoded),
-        unlist(input$year_range),
-        unlist(input$data_type),
-        sep = " "
-      )
+      weather_results
     )
   })
 }
