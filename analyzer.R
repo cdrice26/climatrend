@@ -5,10 +5,7 @@ library(dplyr)
 # A case study on the Greek energy market. Energy, 325, 135854.
 # https://doi.org/10.1016/j.energy.2025.135854
 
-data <- read.csv("long.csv", stringsAsFactors = FALSE)
-
 farima <- function(data, h = 365, include_periodic = TRUE) {
-  data$date <- as.Date(data$date)
   x <- data$value
   n <- length(x)
 
@@ -65,10 +62,13 @@ farima <- function(data, h = 365, include_periodic = TRUE) {
   y_future <- trend_pred + r_future
   if (include_periodic) {
     y_future <- y_future + p_future
+  } else {
+    p_mean <- rep(mean(p), h)
+    y_future <- y_future + p_mean
   }
 
   # Return values
-  xr <- if (include_periodic) x else y_prime
+  xr <- if (include_periodic) x else y_prime + rep(mean(p), n)
   result <- data.frame(
     date = data$date, value = as.numeric(xr), forecasted = rep(FALSE, n)
   )
@@ -77,6 +77,3 @@ farima <- function(data, h = 365, include_periodic = TRUE) {
   )
   rbind(result, future_result)
 }
-
-result <- farima(data, h = 2000, include_periodic = FALSE)
-plot(result$date, result$value, type = "l", col = "blue", xlab = "Date", ylab = "Temperature")

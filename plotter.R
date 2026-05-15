@@ -1,7 +1,7 @@
 library(ggplot2)
 library(dplyr)
 
-prepare_df <- function(weather_results, seasonal_diff = FALSE) {
+prepare_df <- function(weather_results) {
   long <- weather_results |>
     select(where(~ !all(is.na(.x)))) |>
     tidyr::pivot_longer(
@@ -10,24 +10,13 @@ prepare_df <- function(weather_results, seasonal_diff = FALSE) {
       values_to = "value"
     )
 
-  if (seasonal_diff) {
-    long <- long |>
-      group_by(location, variable) |>
-      arrange(date) |>
-      # mutate(value = c(NA_real_, diff(value))) |>
-      mutate(value = c(rep(NA_real_, 365 / 4), diff(value, lag = 365 / 4))) |>
-      mutate(value = c(rep(NA_real_, 365), diff(value, lag = 365))) |>
-      ungroup() |>
-      filter(!is.na(value))
-  }
-
-  long
+  as.data.frame(long)
 }
 
 make_plots <- function(long) {
   ggplot(
     data = long,
-    mapping = aes(x = date, y = value, color = variable)
+    mapping = aes(x = date, y = value, color = forecasted)
   ) +
     geom_line() +
     facet_grid(location ~ variable, scales = "free_y")

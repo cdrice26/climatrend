@@ -1,4 +1,5 @@
 library(shiny)
+library(dplyr)
 source("locations.R")
 source("fetcher.R")
 source("analyzer.R")
@@ -23,6 +24,15 @@ ui <- fluidPage(
     "data_type",
     "Data Type:",
     choices = c("Temperature", "Precipitation", "Wind Speed")
+  ),
+  tags$hr(),
+  sliderInput(
+    "forecast_horizon", "Forecast Horizon (years):",
+    min = 1, max = 100, value = 10, step = 1
+  ),
+  checkboxInput(
+    "include_periodic", "Include Periodic Component in Forecast",
+    value = FALSE
   ),
   tags$hr(),
   actionButton("submit", "Submit"),
@@ -64,11 +74,20 @@ server <- function(input, output, session) {
         NULL
       }
     }))
-    long <- prepare_df(weather_results, seasonal_diff = FALSE)
-    write.csv(long, "long.csv", row.names = FALSE)
-    # models <-
+    long <- prepare_df(weather_results)
+    forecasts <- long |>
+      group_by(location, variable) |>
+      arrange(date) |>
+      group_modify(
+        ~ farima(
+          .x,
+          h = input$forecast_horizon * 365,
+          include_periodic = input$include_periodic
+        )
+      ) |>
+      ungroup()
     output$plot <- renderPlot(
-      make_plots(long)
+      make_plots(forecasts)
     )
   })
 }
