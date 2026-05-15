@@ -14,6 +14,8 @@ prepare_df <- function(weather_results, seasonal_diff = FALSE) {
     long <- long |>
       group_by(location, variable) |>
       arrange(date) |>
+      # mutate(value = c(NA_real_, diff(value))) |>
+      mutate(value = c(rep(NA_real_, 365 / 4), diff(value, lag = 365 / 4))) |>
       mutate(value = c(rep(NA_real_, 365), diff(value, lag = 365))) |>
       ungroup() |>
       filter(!is.na(value))

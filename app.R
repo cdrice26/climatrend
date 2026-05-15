@@ -63,9 +63,10 @@ server <- function(input, output, session) {
       } else {
         NULL
       }
-      # Remove leap days for seasonal differencing
-    })) |> dplyr::filter(format(date, "%m-%d") != "02-29")
-    long <- prepare_df(weather_results, seasonal_diff = TRUE)
+    }))
+    long <- prepare_df(weather_results, seasonal_diff = FALSE)
+    write.csv(long, "long.csv", row.names = FALSE)
+    # models <-
     output$plot <- renderPlot(
       make_plots(long)
     )
