@@ -7,6 +7,8 @@ source("plotter.R")
 
 ui <- fluidPage(
   titlePanel("Climatrend"),
+  tags$link(rel = "stylesheet", type = "text/css", href = "app.css"),
+  tags$script(src = "app.js"),
   div(tags$strong("Locations:")),
   div(id = "location_container"),
   actionButton("add_btn", "Add Another Location"),
@@ -63,6 +65,10 @@ server <- function(input, output, session) {
 
   # Submit handler
   observeEvent(input$submit, {
+    if (length(vals$data) == 0) {
+      showNotification("Please add at least one location.", type = "error")
+      return()
+    }
     geocoded <- lapply(vals$data, \(loc) {
       Sys.sleep(1) # Don't send more than 1 request per second
       geocode(loc)
@@ -73,7 +79,14 @@ server <- function(input, output, session) {
       } else {
         NULL
       }
-    }))
+    }) |> Filter(f = Negate(is.null), x = _))
+    if (is.null(weather_results) || nrow(weather_results) == 0) {
+      showNotification(
+        "No weather data found for the provided locations and time range.",
+        type = "error"
+      )
+      return()
+    }
     long <- prepare_df(weather_results)
     forecasts <- long |>
       group_by(location, variable) |>
