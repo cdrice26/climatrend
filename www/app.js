@@ -4,6 +4,7 @@ $(function() {
     if (!btn.data('loading')) {
       btn.data('loading', true);
       btn.prop('disabled', true);
+      btn.attr('style', 'display: flex; flex-direction: row; align-items: center; justify-content: center;');
       btn.attr('data-original-text', btn.html());
       btn.html('<span class="submit-spinner"></span> Loading...');
     }
