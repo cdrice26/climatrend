@@ -1,8 +1,9 @@
 library(ggplot2)
+library(dplyr)
 
 prepare_df <- function(weather_results, seasonal_diff = FALSE) {
   long <- weather_results |>
-    dplyr::select(dplyr::where(~ !all(is.na(.x)))) |>
+    select(where(~ !all(is.na(.x)))) |>
     tidyr::pivot_longer(
       cols = -c(date, location),
       names_to = "variable",
@@ -11,11 +12,11 @@ prepare_df <- function(weather_results, seasonal_diff = FALSE) {
 
   if (seasonal_diff) {
     long <- long |>
-      dplyr::group_by(location, variable) |>
-      dplyr::arrange(date) |>
-      dplyr::mutate(value = c(rep(NA_real_, 365), diff(value, lag = 365))) |>
-      dplyr::ungroup() |>
-      dplyr::filter(!is.na(value))
+      group_by(location, variable) |>
+      arrange(date) |>
+      mutate(value = c(rep(NA_real_, 365), diff(value, lag = 365))) |>
+      ungroup() |>
+      filter(!is.na(value))
   }
 
   long
