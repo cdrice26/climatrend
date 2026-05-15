@@ -9,7 +9,6 @@ data <- read.csv("long.csv", stringsAsFactors = FALSE)
 
 farima <- function(data, h = 365, include_periodic = TRUE) {
   data$date <- as.Date(data$date)
-  data <- data |> filter(variable == "temperature")
   x <- data$value
   n <- length(x)
 
@@ -69,8 +68,9 @@ farima <- function(data, h = 365, include_periodic = TRUE) {
   }
 
   # Return values
+  xr <- if (include_periodic) x else y_prime
   result <- data.frame(
-    date = data$date, value = as.numeric(x), forecasted = rep(FALSE, n)
+    date = data$date, value = as.numeric(xr), forecasted = rep(FALSE, n)
   )
   future_result <- data.frame(
     date = future_dates, value = y_future, forecasted = rep(TRUE, h)
