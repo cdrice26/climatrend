@@ -23,7 +23,7 @@ geocode <- function(loc) {
 
 fetch_weather <- function(loc, year_range, data_type) {
   if (!requireNamespace("httr", quietly = TRUE)) {
-    stop("Package 'httr' is required for geocoding.
+    stop("Package 'httr' is required for weather fetching.
      Install it with install.packages('httr').")
   }
 
