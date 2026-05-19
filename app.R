@@ -1,3 +1,5 @@
+options(shiny.plot.use_svg = TRUE)
+
 library(shiny)
 library(dplyr)
 source("locations.R")
@@ -39,7 +41,11 @@ ui <- fluidPage(
   tags$hr(),
   actionButton("submit", "Submit"),
   tags$hr(),
-  plotOutput("plot"),
+  tags$div(style = "height: 150px;", htmlOutput("info")),
+  plotOutput("plot", hover = hoverOpts(
+    "plot_hover",
+    delay = 0, delayType = "throttle"
+  )),
   tags$p(
     HTML(
       'Geocoding via <a
@@ -119,6 +125,45 @@ server <- function(input, output, session) {
     output$plot <- renderPlot(
       make_plots(forecasts)
     )
+    output$info <- renderText({
+      if (is.null(input$plot_hover)) {
+        "Hover over the plot to see details."
+      } else {
+        hover <- input$plot_hover
+        point <- nearPoints(forecasts, hover, threshold = 10, maxpoints = 1)
+        if (nrow(point) == 0) {
+          "Hover over the plot to see details."
+        } else {
+          paste0(
+            "<strong>Date:</strong> ", as.Date(point$date), "<br>",
+            "<strong>Value:</strong> ", round(point$value, 2),
+            ifelse(input$include_periodic, "", "*"), "<br>",
+            "<strong>Forecasted?:</strong> ",
+            ifelse(point$forecasted, "Forecasted", "Historical"), "<br>",
+            ifelse(
+              point$forecasted && !input$include_periodic,
+              paste(
+                "<strong>Difference from Average of Last 4 Years of
+                Historical Data:</strong>",
+                round(point$value -
+                  mean(
+                    tail(forecasts$value[!forecasts$forecasted], 365.25 * 4)
+                  ), 2),
+                "<br>"
+              ),
+              ""
+            ),
+            ifelse(input$include_periodic, "",
+              "<span style='color: red;'>
+              *Due to exclusion of the periodic/seasonal component,
+              this is neither the actual nor expected value
+              for the day and is only meaningful for general trends.
+              </span>"
+            )
+          )
+        }
+      }
+    })
   })
 }
 
