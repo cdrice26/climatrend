@@ -39,7 +39,24 @@ ui <- fluidPage(
   tags$hr(),
   actionButton("submit", "Submit"),
   tags$hr(),
-  plotOutput("plot")
+  plotOutput("plot"),
+  tags$p(
+    HTML(
+      'Geocoding via <a
+      href="https://nominatim.openstreetmap.org/"
+      target="_blank" rel="noopener noreferrer">
+      OpenStreetMap Nominatim API</a>. OpenStreetMap data
+      is licensed under the <a href="https://www.openstreetmap.org/copyright"
+       target="_blank" rel="noopener noreferrer">
+       Open Database License</a>.
+     Weather data via <a href="https://open-meteo.com/"
+      target="_blank" rel="noopener noreferrer">
+      Open-Meteo API</a>, which uses climate data
+      from the <a href="https://climate.copernicus.eu/"
+       target="_blank" rel="noopener noreferrer">
+       Copernicus Climate Change Service</a>.'
+    )
+  )
 )
 
 server <- function(input, output, session) {
