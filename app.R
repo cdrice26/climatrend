@@ -73,7 +73,11 @@ ui <- fluidPage(
       Open-Meteo API</a>, which uses climate data
       from the <a href="https://climate.copernicus.eu/"
        target="_blank" rel="noopener noreferrer">
-       Copernicus Climate Change Service</a>.'
+       Copernicus Climate Change Service</a>.
+      This project is licensed under the 
+      <a href="https://github.com/cdrice26/climatrend/LICENSE">GPL v3.0</a>.
+      Source code can be found on 
+      <a href="https://github.com/cdrice26/climatrend">GitHub</a>.'
     )
   )
 )
