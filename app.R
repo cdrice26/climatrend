@@ -75,7 +75,7 @@ ui <- fluidPage(
        target="_blank" rel="noopener noreferrer">
        Copernicus Climate Change Service</a>.
       This project is licensed under the 
-      <a href="https://github.com/cdrice26/climatrend/LICENSE">GPL v3.0</a>.
+      <a href="https://github.com/cdrice26/climatrend/blob/main/LICENSE">GPL v3.0</a>.
       Source code can be found on 
       <a href="https://github.com/cdrice26/climatrend">GitHub</a>.'
     )
